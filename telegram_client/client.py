@@ -7,17 +7,21 @@ import queue
 import threading
 
 from telegram_client.message import Message
+from telegram_client.core import CoreMixin
 from telegram_client.authorization import AuthorizationMixin
 from telegram_client.chats import ChatsMixin
 from telegram_client.messages import MessagesMixin
 from telegram_client.downloads import DownloadsMixin
+from telegram_client.actualmessages import ActualMessageMixin
 
 
 class TelegramClient(
+    CoreMixin,
     AuthorizationMixin,
     ChatsMixin,
     MessagesMixin,
-    DownloadsMixin
+    DownloadsMixin,
+    ActualMessageMixin
 ):
     def __init__(self):
         self.dll_directory = os.add_dll_directory(
@@ -72,33 +76,19 @@ class TelegramClient(
         self._receiver_thread = None
 
         self._closed_event = threading.Event()
+
+        self.message_events = queue.Queue()
+
+        self._pending_requests = {}
+        self._pending_lock = threading.Lock()
+
+        self._receiver_running = False
+        self._receiver_thread = None
+
+        self._closed_event = threading.Event()
+            
+
     
-
-    def send(self, data):
-        request = json.dumps(
-            data,
-            ensure_ascii=False
-        ).encode("utf-8")
-
-        self.tdlib.td_json_client_send(
-            self.client,
-            request
-        )
-
-    def receive(self, timeout=1.0):
-        result = self.tdlib.td_json_client_receive(
-            self.client,
-            timeout
-        )
-
-        if not result:
-            return None
-
-        try:
-            return json.loads(result.decode("utf-8"))
-        except (UnicodeDecodeError, json.JSONDecodeError):
-            return None
-
     def run(self):
         print("Запуск Telegram Client...")
 
@@ -121,8 +111,8 @@ class TelegramClient(
                     )
 
             print("\nАвторизация успешна!")
+            self.start_receiver()
             print("\nЗагружаем список чатов...")
-
             self.get_chats()
 
             while True:
@@ -185,63 +175,18 @@ class TelegramClient(
             self.close()
 
 
-    def close(self):
-        if not self.client:
-            return
-
-        self.send({"@type": "close"})
-
-        # Ждём подтверждения закрытия TDLib
-        deadline = time.monotonic() + 10
-
-        while time.monotonic() < deadline:
-            update = self.receive(0.5)
-
-            if update and update.get("@type") == "updateAuthorizationState":
-                state = update.get("authorization_state", {})
-
-                if state.get("@type") == "authorizationStateClosed":
-                    break
-
-        self.tdlib.td_json_client_destroy(self.client)
-        self.client = None
-
-        print("Telegram Client остановлен.")
     
-    def request(self, data, timeout=30):
-        self.request_id += 1
-        extra = str(self.request_id)
-        data["@extra"] = extra
 
-        self.send(data)
-        deadline = time.monotonic() + timeout
-
-        while time.monotonic() < deadline:
-            update = self.receive(1.0)
-
-            if not update:
-                continue
-
-            if update.get("@extra") == extra:
-                if update.get("@type") == "error":
-                    raise RuntimeError(
-                        f"TDLib {update.get('code')}: "
-                        f"{update.get('message')}"
-                    )
-                return update
-
-            self.process_update(update)
-
-        raise TimeoutError(
-            f"Не дождались ответа: {data.get('@type')}"
-        )
-
+    
     def process_update(self, update):
         update_type = update.get("@type")
 
         if update_type == "updateAuthorizationState":
             state = update.get("authorization_state", {})
+            if state.get("@type") == "authorizationStateClosed":
+                self._closed_event.set()
             self.process_authorization(state)
+
         elif update_type == "updateNewMessage":
             raw_message = update.get("message", {})
             message = Message.from_tdlib(raw_message)
@@ -251,7 +196,13 @@ class TelegramClient(
                 "data": message
             })
 
-            print(f"Новое сообщение: {message.text}")        
+            print("\n========== НОВОЕ СООБЩЕНИЕ ==========")
+            print(f"ID: {message.id}")
+            print(f"Chat ID: {message.chat_id}")
+            print(f"Отправитель: {message.sender_id}")
+            print(f"Текст: {message.text}")
+            print(f"Исходящее: {message.is_outgoing}")
+            print("=====================================")     
         elif update_type == "error":
             print(
                 "Ошибка TDLib:",
