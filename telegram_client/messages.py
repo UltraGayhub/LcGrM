@@ -1,4 +1,4 @@
-from telegram_client.message_parser import parse_message
+from telegram_client.message import Message
 
 class MessagesMixin:
 
@@ -43,18 +43,15 @@ class MessagesMixin:
                 continue
 
         parsed_messages = [
-        parse_message(message)
-        for message in reversed(batch)
+            Message.from_tdlib(message)
+            for message in reversed(batch)
         ]
 
         for message in parsed_messages:
             self.debug_message(message)
-            
+
         return {
-            "messages": [
-                parse_message(message)
-                for message in reversed(batch)
-            ],
+            "messages": parsed_messages,
             "next_from_message_id": cursor,
             "has_more": len(batch) == limit
         }
@@ -92,11 +89,11 @@ class MessagesMixin:
 
     def debug_message(self, message):
         print("\n========== ПОЛУЧЕНО СООБЩЕНИЕ ==========")
-        print(f"ID:          {message.get('id')}")
-        print(f"Chat ID:     {message.get('chat_id')}")
-        print(f"Отправитель: {message.get('sender')}")
-        print(f"Дата:        {message.get('date')}")
-        print(f"Тип:         {message.get('type')}")
-        print(f"Текст:       {message.get('text')}")
-        print(f"Исходящее:   {message.get('is_outgoing')}")
+        print(f"ID:          {message.id}")
+        print(f"Chat ID:     {message.chat_id}")
+        print(f"Отправитель: {message.sender_id}")
+        print(f"Дата:        {message.date}")
+        print(f"Тип:         {message.type}")
+        print(f"Текст:       {message.text}")
+        print(f"Исходящее:   {message.is_outgoing}")
         print("=" * 42)

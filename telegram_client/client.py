@@ -3,7 +3,10 @@ import json
 import os
 import time
 from config import TDLIB_PATH
+import queue
+import threading
 
+from telegram_client.message import Message
 from telegram_client.authorization import AuthorizationMixin
 from telegram_client.chats import ChatsMixin
 from telegram_client.messages import MessagesMixin
@@ -56,9 +59,20 @@ class TelegramClient(
 
         if not self.client:
             raise RuntimeError("Не удалось создать TDLib Client")
-
+        
         self.authorized = False
         self.request_id = 0
+
+        self.message_events = queue.Queue()
+
+        self._pending_requests = {}
+        self._pending_lock = threading.Lock()
+
+        self._receiver_running = False
+        self._receiver_thread = None
+
+        self._closed_event = threading.Event()
+    
 
     def send(self, data):
         request = json.dumps(
@@ -228,7 +242,16 @@ class TelegramClient(
         if update_type == "updateAuthorizationState":
             state = update.get("authorization_state", {})
             self.process_authorization(state)
+        elif update_type == "updateNewMessage":
+            raw_message = update.get("message", {})
+            message = Message.from_tdlib(raw_message)
 
+            self.message_events.put({
+                "event": "new_message",
+                "data": message
+            })
+
+            print(f"Новое сообщение: {message.text}")        
         elif update_type == "error":
             print(
                 "Ошибка TDLib:",
