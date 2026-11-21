@@ -76,16 +76,6 @@ class TelegramClient(
         self._receiver_thread = None
 
         self._closed_event = threading.Event()
-
-        self.message_events = queue.Queue()
-
-        self._pending_requests = {}
-        self._pending_lock = threading.Lock()
-
-        self._receiver_running = False
-        self._receiver_thread = None
-
-        self._closed_event = threading.Event()
             
 
     
