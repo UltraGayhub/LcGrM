@@ -3,3 +3,7 @@
 session/
 __pycache__/
 *.pyc
+downloads/*
+!downloads/.gitkeep
+downloads/voice/*
+!downloads/voice/.gitkeep
