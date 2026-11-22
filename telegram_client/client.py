@@ -1,7 +1,5 @@
 import ctypes
-import json
 import os
-import time
 from config import TDLIB_PATH
 import queue
 import threading
@@ -177,13 +175,7 @@ class TelegramClient(
                 "data": message
             })
 
-            print("\n========== НОВОЕ СООБЩЕНИЕ ==========")
-            print(f"ID: {message.id}")
-            print(f"Chat ID: {message.chat_id}")
-            print(f"Отправитель: {message.sender_id}")
-            print(f"Текст: {message.text}")
-            print(f"Исходящее: {message.is_outgoing}")
-            print("=====================================")     
+            self.debug_message(message)   
         elif update_type == "error":
             print(
                 "Ошибка TDLib:",

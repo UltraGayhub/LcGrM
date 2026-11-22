@@ -74,7 +74,8 @@ class MessagesMixin:
             })
 
             if result.get("@type") == "message":
-               print(f"Сообщение отправлено! ID: {result['id']}")
+                print(f"Сообщение отправлено! ID: {result['id']}")
+                return Message.from_tdlib(result)
             else:
                 print("Неожиданный ответ TDLib:")
                 print(result)

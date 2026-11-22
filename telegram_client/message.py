@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-
+from telegram_client.message_parser import parse_message
 
 @dataclass
 class Message:
@@ -15,10 +15,9 @@ class Message:
 
     @classmethod
     def from_tdlib(cls, data: dict):
-        from telegram_client.message_parser import parse_message
+
 
         parsed = parse_message(data)
-
         return cls(
             id=parsed["id"],
             chat_id=parsed["chat_id"],

@@ -74,7 +74,7 @@ class DownloadsMixin:
             return
 
         # Скачиваем голосовые
-        downloaded = 0
+        downloaded_files = []
 
         for voice in voice_messages:
             print(f"\nСкачиваю сообщение {voice['message_id']}...")
@@ -103,10 +103,19 @@ class DownloadsMixin:
 
                 shutil.copy2(source_path, destination)
 
-                downloaded += 1
-                print(f"Сохранено: {destination}")
+                downloaded_files.append({
+                    "message_id": voice["message_id"],
+                    "name": destination.name,
+                    "path": str(destination.resolve())
+                })
+
 
             except Exception as error:
                 print(f"Ошибка скачивания: {error}")
 
-        print(f"\nГотово! Скачано голосовых: {downloaded}/{len(voice_messages)}")
+        print(
+            f"\nГотово! Скачано голосовых: "
+            f"{len(downloaded_files)}/{len(voice_messages)}"
+        )
+
+        return downloaded_files
