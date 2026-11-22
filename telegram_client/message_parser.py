@@ -1,4 +1,3 @@
-
 def parse_message(message):
     content = message.get("content", {})
     content_type = content.get("@type", "")

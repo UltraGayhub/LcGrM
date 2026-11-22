@@ -115,24 +115,24 @@ class TelegramClient(
                 command = input("\nВыбор: ").strip()
 
                 if command == "1":
-                    chat_number = int(input("Номер чата: ")) - 1
+                    value = input("\nНомер чата: ").strip()
+                    
+                    try:
+                        index = int(value) - 1
 
-                    if chat_number < 0 or chat_number >= len(chats):
-                        print("Неверный номер чата.")
-                        continue
+                        if 0 <= index < len(self.chats):
+                            chat_id = self.chats[index]["id"]
+                            message_text = input("Введите сообщение: ")
+                            self.send_text_message(chat_id, message_text)
+                        else:
+                            print("Неверный номер чата.")
 
-                    chat_id = chats[chat_number]["id"]
-
-                    message_text = input("Введите сообщение: ")
-
-                    self.send_text_message(chat_id, message_text)
-
+                    except ValueError:
+                        print("Нужно ввести номер чата.")     
                 elif command == "2":
                     self.select_chat()
-
                 elif command == "3":
                     value = input("\nНомер чата: ").strip()
-
                     try:
                         index = int(value) - 1
 
@@ -144,7 +144,6 @@ class TelegramClient(
 
                     except ValueError:
                         print("Нужно ввести номер чата.")
-
                 elif command == "4":
                     break
                 
@@ -159,10 +158,6 @@ class TelegramClient(
 
         finally:
             self.close()
-
-
-    
-
     
     def process_update(self, update):
         update_type = update.get("@type")
