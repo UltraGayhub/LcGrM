@@ -115,8 +115,6 @@ class TelegramClient(
                 command = input("\nВыбор: ").strip()
 
                 if command == "1":
-                    chats = self.get_chats()
-
                     chat_number = int(input("Номер чата: ")) - 1
 
                     if chat_number < 0 or chat_number >= len(chats):
@@ -133,8 +131,6 @@ class TelegramClient(
                     self.select_chat()
 
                 elif command == "3":
-                    self.get_chats()
-
                     value = input("\nНомер чата: ").strip()
 
                     try:
