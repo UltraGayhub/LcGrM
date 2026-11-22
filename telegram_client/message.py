@@ -16,7 +16,6 @@ class Message:
     @classmethod
     def from_tdlib(cls, data: dict):
 
-
         parsed = parse_message(data)
         return cls(
             id=parsed["id"],

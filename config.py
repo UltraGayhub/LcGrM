@@ -10,6 +10,8 @@ TDLIB_PATH = BASE_DIR / "tdlib" / "tdjson.dll"
 
 DATABASE_DIR = BASE_DIR / "session" / "database"
 FILES_DIR = BASE_DIR / "session" / "files"
+DOWNLOADS_DIR = BASE_DIR / "downloads"
+VOICE_DIR = DOWNLOADS_DIR / "voice"
 
 if API_ID <= 0:
     raise RuntimeError("Неверный Telegram API ID")
@@ -22,3 +24,5 @@ if not TDLIB_PATH.exists():
 
 DATABASE_DIR.mkdir(parents=True, exist_ok=True)
 FILES_DIR.mkdir(parents=True, exist_ok=True)
+DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
+VOICE_DIR.mkdir(parents=True, exist_ok=True)

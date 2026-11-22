@@ -1,5 +1,6 @@
-from pathlib import Path
 import shutil
+from config import VOICE_DIR
+
 class DownloadsMixin:
 
     def download_voices(self, chat_id, total_limit=500):
@@ -7,8 +8,7 @@ class DownloadsMixin:
 
         print("\nИщу голосовые сообщения...")
 
-        voice_dir = Path("downloads/voice")
-        voice_dir.mkdir(parents=True, exist_ok=True)
+        voice_dir = VOICE_DIR
 
         from_message_id = 0
         all_messages = []
@@ -46,8 +46,6 @@ class DownloadsMixin:
 
             from_message_id = all_messages[-1]["id"]
 
-            if len(messages) < remaining:
-                continue
 
         print(f"Проверено сообщений: {len(all_messages)}")
 

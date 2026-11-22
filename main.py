@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from telegram_client.client import TelegramClient
+from telegram_client import TelegramClient
 
 
 def main():
