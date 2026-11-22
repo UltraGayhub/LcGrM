@@ -45,11 +45,10 @@ class ChatsMixin:
 
         for index, chat in enumerate(chats, 1):
             print(
-                f"{index}. {chat['title']} "
-#                f"| {chat['type']} "
-#                f"| ID: {chat['id']}"
+                f"{index}. {chat['title']}"
+#               f"| {chat['type']}"
+#               f"| ID: {chat['id']}"
             )
-
         return chats
 
 
@@ -57,26 +56,24 @@ class ChatsMixin:
             if not getattr(self, "chats", None):
                 print("Сначала загрузи список чатов.")
                 return
+            
+            value = input(
+                "\nВведи номер чата или q для выхода: "
+            ).strip().lower()
 
-            while True:
-                value = input(
-                    "\nВведи номер чата или q для выхода: "
-                ).strip().lower()
+            if value == "q":
+                return
 
-                if value == "q":
-                    return
+            try:
+                index = int(value) - 1
 
-                try:
-                    index = int(value) - 1
+                if index < 0 or index >= len(self.chats):
+                    print("Неверный номер.")
 
-                    if index < 0 or index >= len(self.chats):
-                        print("Неверный номер.")
-                        continue
+                chat = self.chats[index]
+                return(chat["id"])
+                print(f"\nОткрываем: {chat['title']}")
+                self.get_history(chat["id"])
 
-                    chat = self.chats[index]
-
-                    print(f"\nОткрываем: {chat['title']}")
-                    self.get_history(chat["id"])
-
-                except ValueError:
-                    print("Введи номер чата.")
+            except ValueError:
+                print("Введи номер чата.")
