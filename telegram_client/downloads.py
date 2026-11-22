@@ -1,8 +1,9 @@
+from pathlib import Path
+import shutil
 class DownloadsMixin:
 
     def download_voices(self, chat_id, total_limit=500):
-        from pathlib import Path
-        import shutil
+
 
         print("\nИщу голосовые сообщения...")
 

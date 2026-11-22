@@ -1,8 +1,6 @@
 from telegram_client.message import Message
 
-class MessagesMixin:
-
-    
+class MessagesMixin:    
     def get_history(self, chat_id, limit=50, from_message_id=0):
         batch = []
         seen_ids = set()
@@ -38,9 +36,6 @@ class MessagesMixin:
                 batch.append(message)
 
             cursor = batch[-1]["id"]
-
-            if len(messages) < remaining:
-                continue
 
         parsed_messages = [
             Message.from_tdlib(message)

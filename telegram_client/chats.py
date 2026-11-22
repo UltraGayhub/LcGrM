@@ -34,7 +34,6 @@ class ChatsMixin:
                         "title": chat.get("title", "Без названия"),
                         "type": chat.get("type", {}).get("@type", "")
                     })
-
             except Exception as error:
                 print("Ошибка получения списка:", error)
 
@@ -73,10 +72,6 @@ class ChatsMixin:
                     continue
 
                 chat = self.chats[index]
-
-                if not isinstance(chat, dict):
-                    print("Ошибка: данные чата некорректны.")
-                    continue
 
                 return chat["id"], chat["title"]
 
