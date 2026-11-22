@@ -53,10 +53,11 @@ class ChatsMixin:
 
 
     def select_chat(self):
-            if not getattr(self, "chats", None):
-                print("Сначала загрузи список чатов.")
-                return
-            
+        if not getattr(self, "chats", None):
+            print("Сначала загрузи список чатов.")
+            return
+
+        while True:
             value = input(
                 "\nВведи номер чата или q для выхода: "
             ).strip().lower()
@@ -69,11 +70,15 @@ class ChatsMixin:
 
                 if index < 0 or index >= len(self.chats):
                     print("Неверный номер.")
+                    continue
 
                 chat = self.chats[index]
-                return(chat["id"])
-                print(f"\nОткрываем: {chat['title']}")
-                self.get_history(chat["id"])
+
+                if not isinstance(chat, dict):
+                    print("Ошибка: данные чата некорректны.")
+                    continue
+
+                return chat["id"], chat["title"]
 
             except ValueError:
                 print("Введи номер чата.")

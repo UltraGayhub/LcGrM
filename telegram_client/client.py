@@ -78,7 +78,6 @@ class TelegramClient(
         self._closed_event = threading.Event()
             
 
-    
     def run(self):
         print("Запуск Telegram Client...")
 
@@ -115,16 +114,34 @@ class TelegramClient(
                 command = input("\nВыбор: ").strip()
 
                 if command == "1":
-                    chat_id = self.select_chat()
+                    selected_chat = self.select_chat()
+                    if selected_chat is None:
+                        continue
+                    chat_id, chat_title = selected_chat
+                    
+                    print(chat_title)
+
                     message_text = input("Введите сообщение: ")
                     self.send_text_message(chat_id, message_text)     
-                    
+
                 elif command == "2":
-                    chat_id = self.select_chat()
+                    selected_chat = self.select_chat()
+                    if selected_chat is None:
+                        continue
+                    chat_id, chat_title = selected_chat
+
+                    print(chat_title)
+                    
                     self.get_history(chat_id)
 
                 elif command == "3":
-                    chat_id = self.select_chat()
+                    selected_chat = self.select_chat()
+                    if selected_chat is None:
+                        continue
+                    chat_id, chat_title = selected_chat
+
+                    print(chat_title)
+
                     self.download_voices(chat_id)
 
                 elif command == "4":
