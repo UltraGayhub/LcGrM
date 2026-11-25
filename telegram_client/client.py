@@ -6,7 +6,11 @@ import threading
 
 from telegram_client.message import Message
 from telegram_client.core import CoreMixin
-from telegram_client.authorization import AuthorizationMixin
+from telegram_client.authorization import (
+    AuthorizationMixin,
+    AUTH_EXTRA,
+    INPUT_STATES,
+)
 from telegram_client.chats import ChatsMixin
 from telegram_client.messages import MessagesMixin
 from telegram_client.downloads import DownloadsMixin
@@ -63,6 +67,7 @@ class TelegramClient(
             raise RuntimeError("Не удалось создать TDLib Client")
         
         self.authorized = False
+        self.auth_state = None
         self.request_id = 0
 
         self.message_events = queue.Queue()
@@ -90,7 +95,16 @@ class TelegramClient(
                     state = update.get("authorization_state", {})
                     self.process_authorization(state)
 
+                    if state.get("@type") == "authorizationStateClosed":
+                        print("Авторизация прервана.")
+                        return
+
                 elif update.get("@type") == "error":
+                    if update.get("@extra") == AUTH_EXTRA:
+                        # Неверный номер, код или пароль: повторяем шаг
+                        self.handle_auth_error(update)
+                        continue
+
                     print(
                         "Ошибка TDLib:",
                         update.get("code"),
@@ -162,9 +176,23 @@ class TelegramClient(
 
         if update_type == "updateAuthorizationState":
             state = update.get("authorization_state", {})
-            if state.get("@type") == "authorizationStateClosed":
+            state_type = state.get("@type")
+
+            if state_type == "authorizationStateClosed":
                 self._closed_event.set()
-            self.process_authorization(state)
+
+            if state_type in INPUT_STATES:
+                # Это фоновый поток: input() здесь конфликтует с меню.
+                # Сессия потеряна, повторный вход только после перезапуска.
+                self.authorized = False
+                self.auth_state = state
+                print(
+                    "\nАвторизация Telegram потеряна "
+                    "(например, сессию завершили с другого устройства). "
+                    "Перезапустите клиент и войдите заново."
+                )
+            else:
+                self.process_authorization(state)
 
         elif update_type == "updateNewMessage":
             raw_message = update.get("message", {})
